@@ -3,6 +3,8 @@ package com.example.alien.sampleinventory;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -51,6 +53,11 @@ public class InventoryActivity extends AppCompatActivity {
     private Spinner spinBanks;
     private Button  btnScan;
 
+    private static int count = 0;
+
+    private int mInterval = 17500;
+    private Handler mHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +91,7 @@ public class InventoryActivity extends AppCompatActivity {
         btn.setBackgroundColor(0xffffffff);
         btn.setTextColor(Color.BLACK);
 
-        btn = (Button) findViewById(R.id.btnClear);
+        btn = (Button) findViewById(R.id.btnStop);
         btn.setBackgroundColor(0xffffffff);
         btn.setTextColor(Color.BLACK);
 
@@ -180,7 +187,6 @@ public class InventoryActivity extends AppCompatActivity {
         // stop continuous inventory
         try {
             reader.stop();
-
             Button btn = (Button) findViewById(R.id.btnScan);
             btn.setText("START");
             btn.setBackgroundColor(0xff007f00);
@@ -191,29 +197,64 @@ public class InventoryActivity extends AppCompatActivity {
     }
 
     public void onRead(View view) {
-        if (reader == null) return;
-
-            try {
-                // Read a single tag and add it to the list
-                RFIDResult result = reader.read();
-                if (!result.isSuccess()) {
-                    Toast.makeText(this, "No tags found", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                if(result.getData() != null) {
-                    addTag((Tag) result.getData());
-                }
-            } catch (ReaderException e) {
-                Toast.makeText(this, "ERROR: " + e, Toast.LENGTH_LONG).show();
-            }
-
-
+        Button btn = (Button) findViewById(R.id.btnRead);
+        btn.setBackgroundColor(0xffff0000);
+        mHandler = new Handler();
+        startRepeatingTask();
     }
 
-    public void onClear(View view) {
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+             //   updateStatus(); //this function can change value of mInterval.
+            } finally {
+                process();
+                mHandler.postDelayed(mStatusChecker, mInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask() {
+        mStatusChecker.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+        Button btn = (Button) findViewById(R.id.btnRead);
+        btn.setBackgroundColor(0xffffffff);
+    }
+
+    private void process() {
+        if (reader == null) return;
+
+        try {
+            // Read a single tag and add it to the list
+            RFIDResult result = reader.read();
+            int max = reader.getMinPower();
+            int min = reader.getMaxPower();
+            EditText e = (EditText) findViewById(R.id.editTrsmit);
+            reader.setPower(Integer.parseInt(e.getText().toString()));
+            count++;
+            if (!result.isSuccess()) {
+                Toast.makeText(this, "No tags found", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(result.getData() != null) {
+                addTag((Tag) result.getData());
+            }
+        } catch (ReaderException e) {
+            Toast.makeText(this, "ERROR: " + e, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void onStop(View view) {
         // clear taglist
-        tagList.clear();
-        taglistAdapter.notifyDataSetChanged();
+        //tagList.clear();
+        //taglistAdapter.notifyDataSetChanged();
+        //    EditText e = (EditText)findViewById(R.id.editTrsmit);
+        //    int power = Integer.parseInt(e.getText().toString(), 10);
+        stopRepeatingTask();
     }
 
     public void onScan(View view) {
@@ -312,8 +353,10 @@ public class InventoryActivity extends AppCompatActivity {
 
                 String user = null;
                 String tid = null;
-                String acc_password = null;
-                String kil_password = null;
+                int transmission = 0;
+               // String acc_password = null;
+               // String kil_password = null;
+                int rssi = 0;
 
                 try {
                     RFIDResult result_user = tag.readUser();                 // Read User Memory Bank
@@ -321,7 +364,7 @@ public class InventoryActivity extends AppCompatActivity {
                         user = result_user.getData().toString();
                     }
 
-                    RFIDResult result_acc = tag.readAccessPwd();                 // Read Access Password
+                 /*  RFIDResult result_acc = tag.readAccessPwd();                 // Read Access Password
                     if(result_acc.isSuccess()) {
                         acc_password = result_acc.getData().toString();
                     }
@@ -330,25 +373,21 @@ public class InventoryActivity extends AppCompatActivity {
                     if(result_kil.isSuccess()) {
                         kil_password = result_kil.getData().toString();
                     }
-
-                    RFIDResult result_tid =  tag.readTID();                // Read Kill Password
+                */
+                    RFIDResult result_tid =  tag.readTID();                // Read TID
                     if(result_tid.isSuccess()) {
                         tid = result_tid.getData().toString();
                     }
-
-
-
+                    Double rssi_instant = tag.getRSSI();
+                    rssi = rssi_instant.intValue();
+                    transmission = reader.getPower();
                 } catch (ReaderException e) {
                     Toast.makeText(InventoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
 
-                Log.d("log", "WHAT'S WRONG?");
-
                 BackgroundTask task = new BackgroundTask(InventoryActivity.this);
-                task.execute(tag.getEPC().toString(), user, tid, acc_password, kil_password);
-
-                Log.d("log", "WHAT'S WRONG?");
-
+                task.execute(tag.getEPC().toString(), user, tid, Integer.toString(transmission), Integer.toString(rssi), Integer.toString(count));
+                if(count == 10) count = 0;
                 // this is a new tag, add it to the list
                 HashMap<String, String> hm = new HashMap<String, String>();
                 hm.put(TAG_EPC, tag.getEPC());

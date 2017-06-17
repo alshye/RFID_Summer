@@ -37,12 +37,16 @@ public class BackgroundTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        String insert_url = "http://192.168.0.100/info.php";
+        String insert_url = "http://192.168.1.102/info.php";
         String epc = params[0];
         String user = params[1];
         String tid = params[2];
-        String acc_pass = params[3];
-        String kil_pass = params[4];
+        String trans_p = params[3];
+        String rssi = params[4];
+        String count = params[5];
+
+        Log.d("count", ": " + count);
+
         try {
             URL url = new URL(insert_url);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -53,21 +57,22 @@ public class BackgroundTask extends AsyncTask<String, Void, String> {
             if(epc == null) epc = "NULL";
             if(user == null) user = "NULL";
             if(tid == null) tid= "NULL";
-            if(acc_pass == null) acc_pass = "NULL";
-            if(kil_pass == null) kil_pass = "NULL";
+          //  if(acc_pass == null) acc_pass = "NULL";
+          //  if(kil_pass == null) kil_pass = "NULL";
+            if(rssi == "0") rssi = "NULL";
 
             String tagInfo = URLEncoder.encode("epc", "UTF-8") + "=" + URLEncoder.encode(epc, "UTF-8") + "&" +
                             URLEncoder.encode("user", "UTF-8") + "=" + URLEncoder.encode(user, "UTF-8") + "&" +
                             URLEncoder.encode("tid", "UTF-8") + "=" + URLEncoder.encode(tid, "UTF-8") + "&" +
-                            URLEncoder.encode("acc_pass", "UTF-8") + "=" + URLEncoder.encode(acc_pass, "UTF-8") + "&" +
-                            URLEncoder.encode("kil_pass", "UTF-8") + "=" + URLEncoder.encode(kil_pass, "UTF-8");
+                            URLEncoder.encode("trans_p", "UTF-8") + "=" + URLEncoder.encode(trans_p, "UTF-8") + "&" +
+                            URLEncoder.encode("rssi", "UTF-8") + "=" + URLEncoder.encode(rssi, "UTF-8") + "&" +
+                            URLEncoder.encode("count", "UTF-8") + "=" + URLEncoder.encode(count, "UTF-8");
             writer.write(tagInfo);
             writer.flush();
             writer.close();
             os.close();
             InputStream is = conn.getInputStream();
             is.close();
-            Log.d("log", "WHAT'S WRONG IN THE BACK?");
             return "Insertion Success!";
 
         } catch (UnsupportedEncodingException e) {
