@@ -20,9 +20,3 @@ void draw() {
          output.flush();
     }
 }
-
-void keyPressed() {
-    output.flush();  // Writes the remaining data to the file
-    output.close();  // Finishes the file
-    exit();  // Stops the program
-}
