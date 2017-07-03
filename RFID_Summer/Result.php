@@ -37,7 +37,7 @@ echo '<html> <head> <style type ="text/css">
 			border-color: white;
 			background-color: white;
 		}
-		</style> </head> <body>
+		</style> <meta http-equiv="refresh" content=20;> </head> <body>
 		<h1> <center> <p> <font color = #95A5A6> Tag Information </font> </p> <center> </h1>
 		<table class="gridtable"> <tr>
 		<th width="30"> No. </th> <th width="100"> EPC Memory </th>
