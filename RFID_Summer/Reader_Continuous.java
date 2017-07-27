@@ -1,5 +1,9 @@
 package com.alien.inventory;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -140,7 +144,8 @@ public class Reader_Continuous {
 				Iterator it = tag_count.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry pair = (Map.Entry) it.next();
-					SQLInsertion(pair.getKey().toString(), Integer.parseInt(pair.getValue().toString()));
+					if(pair.getValue().toString().equals("0")); 
+					else SQLInsertion(pair.getKey().toString(), Integer.parseInt(pair.getValue().toString()), getTemperature());
 					pair.setValue(0);
 				}
 				System.out.println(" Count: " + totalCount);
@@ -171,18 +176,43 @@ public class Reader_Continuous {
 	 *
 	 * Insert Tag data into MySQL 
 	 */
-	public void SQLInsertion(String epc, int count) {
+	public void SQLInsertion(String epc, int count, String temperature) {
 		epc = epc.replaceAll("\\s", "");
-
+		double temp = 0.0;
+		if(temperature != null) temp = Double.parseDouble(temperature);
+		
 		try {
 			PreparedStatement stmt = conn.prepareStatement
-					("INSERT INTO Tag_Count(EPC, count, Date) VALUES "
-							+ "('"+ epc + "', " + count + ", sysdate())");
+					("INSERT INTO Tag_Count(EPC, count, temperature, Date) VALUES "
+							+ "('"+ epc + "', " + count + ", " + temp + ", sysdate())");
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public String getTemperature() {
+		File file = new File("C:\\Users\\Min Hye\\Documents\\Processing\\Temperature\\temperature.txt");		
+		BufferedReader reader = null;
+		String temperature = null;
+
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			temperature = reader.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+
+		return temperature;
 	}
 
 

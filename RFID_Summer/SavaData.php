@@ -27,7 +27,7 @@
 		$temp = $row ["Temperature"];
 		$date = $row ["DATE"];
 
-		$data = $id."\r\t".$epc."\r\t".$power."\r\t".$rssi."\r\t".$temp."\r\t".$date."\r\n";
+		$data = $id."\r\t".$epc."\r\t".$user."\r\t".$tid."\r\t".$power."\r\t".$rssi."\r\t".$temp."\r\t".$date."\r\n";
 		fwrite ( $fh, $data);
 	}
 	

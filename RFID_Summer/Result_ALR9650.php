@@ -78,8 +78,10 @@ echo '<html> <head> <style type ="text/css">
 		$epc_suc = $row["EPC_SUC"];	
 		$user_suc = $row["USER_SUC"];
 		$tid_suc = $row["TID_SUC"];
-		echo '<tr> <td>' .$id. '</td> <td>' .$epc. '</td> <td>' .$user. '</td> <td>' .$tid. '</td> <td>' .$power. '</td> <td>-' .$rssi. '</td> <td>' .$temp.'&deg;F</td> <td>'
-		.$epc_suc. '</td> <td>' .$user_suc. '</td> <td>' .$tid_suc. '</td> <td>' .$date. '</td> </tr>';
+		echo '<tr> <td>' .$id. '</td> <td>' .$epc. '</td> <td>' .$user. '</td> <td>' .$tid. '</td> <td>' .$power. '</td> <td>-' .$rssi. '</td> <td>';		
+		if($temp == NULL || $temp == "") echo $temp;
+		else echo $temp.'&deg;F';
+		echo '</td> <td>' .$epc_suc. '</td> <td>' .$user_suc. '</td> <td>' .$tid_suc. '</td> <td>' .$date. '</td> </tr>';
 	}
 	echo '</table> </body>';
 ?>
